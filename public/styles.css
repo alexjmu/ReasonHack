@@ -1,0 +1,24 @@
+/* @embed base.css */
+/* reset */
+body, div {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+body {
+  font: 14px "Century Gothic", Futura, sans-serif;
+}
+
+#root {
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+/* TODO: Styling */
