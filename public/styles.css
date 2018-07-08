@@ -9,6 +9,8 @@ body, div {
 
 body {
   font: 14px "Century Gothic", Futura, sans-serif;
+  color: white;
+  background-color: black;
 }
 
 #root {
@@ -22,3 +24,8 @@ body {
 }
 
 /* TODO: Styling */
+
+table.room {
+  /* TODO: Remove outline, make big and centred */
+  font-size: 40px;
+}

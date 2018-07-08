@@ -34,7 +34,7 @@ let sword: weapon = {
 let slime: mob = {
   name: "green slime",
   health: 2,
-  repr: "S"
+  repr: {js|👾|js}
 };
 
 type square =

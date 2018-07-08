@@ -123,6 +123,12 @@ let roomToStr = (r: Data.room) : string => {
   |> String.concat("\n")
 };
 
+let squareToStr = (s: Data.square) : string => switch(s) {
+  | Empty => {js|⬛|js}
+  | Player => {js|🤺|js}
+  | Mob(mob) => mob.repr
+}
+
 /* TODO:
 
 1. (Fix and) compile what we have so far [X]
@@ -130,8 +136,8 @@ let roomToStr = (r: Data.room) : string => {
 2.5: Easiest way to move mobs is to have a list of mobs and their locations as first thought.
 BUT, modify "view" to create a "room" based on a list of mobs and locations, for easier printing [X]
 2.75: Test moving player, monsters, attacking, defeating monsters [X]
-3. Hook up to React app with elements for board display (move all this code to react app!) [ ]
-4. Allow player interaction with buttons I guess?
+3. Hook up to React app with elements for board display (move all this code to react app!) [X]
+4. Allow player interaction by clicking highlighted tiles -> give callback function to Tile
 5. Prevent the player or mobs from moving off the screen
 6. Mob attacks
 7. Player death
