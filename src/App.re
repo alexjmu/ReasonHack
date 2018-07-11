@@ -35,32 +35,58 @@ module Room {
     ...component,
     render: (_self) =>
       <table className={"room"}>
-        {
-          room |> List.map((row: list(Data.square)) => {
-          <tr>
-            {
-              row |> List.map((tile: Data.square) => {
-                <td><Tile tile></Tile></td>
-              })
-              |> Array.of_list |> ReasonReact.arrayToElement
-            }
-          </tr>
-          })
-          |> Array.of_list |> ReasonReact.arrayToElement
-        }
+        <tbody>
+          {
+            room |> List.map((row: list(Data.square)) => {
+            <tr>
+              {
+                row |> List.map((tile: Data.square) => {
+                  <td><Tile tile></Tile></td>
+                })
+                |> Array.of_list |> ReasonReact.arrayToElement
+              }
+            </tr>
+            })
+            |> Array.of_list |> ReasonReact.arrayToElement
+          }
+        </tbody>
       </table>
   }
 };
 
 /* App */
 
-let component = ReasonReact.statelessComponent("App");
+type state = Data.state;
+let component = ReasonReact.reducerComponent("App"); /* TODO */
 
 let make = (_children) => {
   ...component,
-  render: (_self) =>
-    <div>
+  initialState: () => Control.initialState,
+  reducer: (action, state) => {
+    ReasonReact.Update(
+      Control.playerTurn(action, state) /* TODO: |> moveMobs |> clearCorpses */
+    )
+  },
+  render: ({state, reduce}) =>
+    <div
+      tabIndex=1
+      onKeyDown=((evt) => {
+        /* TODO: Register this at the window level via JS interop */
+        let key = ReactEventRe.Keyboard.key(evt);
+        let dir: option(Data.direction) = switch(key) {
+          | "ArrowUp" => Some(Data.Up)
+          | "ArrowRight" => Some(Data.Right)
+          | "ArrowDown" => Some(Data.Down)
+          | "ArrowLeft" => Some(Data.Left)
+          | _ => None
+        };
+        switch(dir) {
+          | Some(d) => {Js.Console.log("move"); reduce(() => Data.Move(d))()}
+          | None => ()
+        }
+      })
+    >
       <h1>(str("CamlHack"))</h1>
-      <Room room={Control.initialState |> Control.stateToRoom} />
+      <Room room={state |> Control.stateToRoom} />
     </div>
 }
