@@ -6,16 +6,6 @@ let valueFromEvent = (evt: ReactEventRe.Form.t) : string => (
   |> ReactDOMRe.domElementToObj
 )##value;
 
-let safeTail = (ls: list('a)) : option(list('a)) => switch(ls) {
-  | [] => None
-  | [_, ...xs] => Some(xs)
-};
-
-let defaultOption = (value: option('a), default: 'a) : 'a => switch(value) {
-  | Some(x) => x
-  | None => default
-};
-
 /* Represents one square on the board */
 module Tile {
   let component = ReasonReact.statelessComponent("Tile");
@@ -56,37 +46,43 @@ module Room {
 
 /* App */
 
+[@bs.val] external window : Dom.window = "";
+[@bs.send] external addEventListener : (Dom.window, string, ('a => unit)) => unit = "";
+
 type state = Data.state;
-let component = ReasonReact.reducerComponent("App"); /* TODO */
+let component = ReasonReact.reducerComponent("App");
 
 let make = (_children) => {
-  ...component,
-  initialState: () => Control.initialState,
-  reducer: (action, state) => {
-    ReasonReact.Update(
-      Control.playerTurn(action, state) /* TODO: |> moveMobs |> clearCorpses */
-    )
-  },
-  render: ({state, reduce}) =>
-    <div
-      tabIndex=1
-      onKeyDown=((evt) => {
-        /* TODO: Register this at the window level via JS interop */
+  let keyToAction = (key: string) : option(Data.action) => {
+    switch(key) {
+      | "ArrowUp" => Some(Data.Move(Data.Up))
+      | "ArrowRight" => Some(Data.Move(Data.Right))
+      | "ArrowDown" => Some(Data.Move(Data.Down))
+      | "ArrowLeft" => Some(Data.Move(Data.Left))
+      | "a" => {Js.log("Attack!"); Some(Attack)}
+      | _ => None
+    };
+  };
+  {
+    ...component,
+    initialState: () => Control.initialState,
+    didMount: ({reduce}) => {
+      let keyPressHandler = (evt) : unit => {
         let key = ReactEventRe.Keyboard.key(evt);
-        let dir: option(Data.direction) = switch(key) {
-          | "ArrowUp" => Some(Data.Up)
-          | "ArrowRight" => Some(Data.Right)
-          | "ArrowDown" => Some(Data.Down)
-          | "ArrowLeft" => Some(Data.Left)
-          | _ => None
-        };
-        switch(dir) {
-          | Some(d) => {Js.Console.log("move"); reduce(() => Data.Move(d))()}
+        switch(keyToAction(key)) {
+          | Some(action) => reduce(() => action)() /* TODO: New API is self.send */
           | None => ()
         }
-      })
-    >
-      <h1>(str("CamlHack"))</h1>
-      <Room room={state |> Control.stateToRoom} />
-    </div>
+      };
+      /* Call reducer with action defined by keypress */
+      addEventListener(window, "keypress", keyPressHandler);
+      ReasonReact.NoUpdate;
+    },
+    reducer: (action, state) => ReasonReact.Update(Control.nextTurn(action, state)),
+    render: ({state}) =>
+      <div>
+        <h1>(str("CamlHack"))</h1>
+        <Room room={state |> Control.stateToRoom} />
+      </div>
+  }
 }

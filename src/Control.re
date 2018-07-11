@@ -28,8 +28,8 @@ let initialState: Data.state = {
 };
 
 let getMobAtLoc = (loc: Data.location, mobs: list((Data.location, Data.mob))) : option(Data.mob) => {
-  switch(find_opt(((l, m)) => l == loc, mobs)) {
-    | Some((loc, mob)) => Some(mob)
+  switch(find_opt(((l, _)) => l == loc, mobs)) {
+    | Some((_loc, mob)) => Some(mob)
     | None => None
   }
 };
@@ -87,6 +87,14 @@ let playerTurn = (action: Data.action, state: Data.state) : Data.state => switch
       | None => state
     }
   }
+};
+
+let nextTurn = (action: Data.action, state: Data.state) : Data.state => {
+  state
+  |> playerTurn(action)
+  /* 60% chance monsters move */
+  |> (s) => {if (Js.Math.random() <= 0.6) moveMobs(s) else s}
+  |> clearCorpses;
 };
 
 /* String representation of game room */
