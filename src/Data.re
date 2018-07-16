@@ -44,9 +44,16 @@ type square =
 
 type room = list(list(square));
 
+let module LocationMap = Map.Make({
+  type t = location;
+  let compare = compare
+});
+
+type mobStore = LocationMap.t(mob);
+
 type state = {
   player: player,
   loc: location,
-  mobs: list((location, mob)),
+  mobs: mobStore,
   size: (int, int)
 };

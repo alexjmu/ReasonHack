@@ -23,14 +23,18 @@ let initialState: Data.state = {
     weapon: Data.sword
   },
   loc: (1, 1),
-  mobs: [((2, 3), Data.slime), ((3, 3), Data.slime)],
+  mobs: Data.LocationMap.(
+    empty
+    |> add((2, 3), Data.slime)
+    |> add((3, 3), Data.slime)
+  ),
   size: (10, 10)
 };
 
-let getMobAtLoc = (loc: Data.location, mobs: list((Data.location, Data.mob))) : option(Data.mob) => {
-  switch(find_opt(((l, _)) => l == loc, mobs)) {
-    | Some((_loc, mob)) => Some(mob)
-    | None => None
+let getMobAtLoc = (loc: Data.location, mobs: Data.mobStore) : option(Data.mob) => {
+  switch(Data.LocationMap.find(loc, mobs)) {
+    | mob => Some(mob)
+    | exception Not_found => None
   }
 };
 
@@ -47,21 +51,23 @@ let isEmpty = (state: Data.state, (x, y) as loc: Data.location) : bool => {
 /* Move every mob one step. Do not move into non-empty squares */
 let moveMobs = ({mobs} as state: Data.state) : Data.state => {
   {...state,
-    mobs: mobs |> List.map(
-      (((x, y): Data.location, mob)) => {
+    mobs: Data.LocationMap.fold(
+      ((x, y): Data.location, mob: Data.mob, newMobs: Data.mobStore) : Data.mobStore => {
         let newLoc = (x + 1, y);
-        if (isEmpty(state, newLoc)) {(newLoc, mob)} else {((x, y), mob)}
-      })
+        Data.LocationMap.add({
+          if (isEmpty(state, newLoc)) newLoc else (x, y)
+        }, mob, newMobs)
+      }, mobs, Data.LocationMap.empty)
   }
 };
 
 let clearCorpses = ({mobs} as state: Data.state) : Data.state => {
   {...state,
-    mobs: mobs |> List.filter(((_, mob: Data.mob)) => mob.health > 0)
+    mobs: mobs |> Data.LocationMap.filter((_, mob: Data.mob) => mob.health > 0)
   }
 };
 
-let attack = (state: Data.state, mobLoc: Data.location, mob: Data.mob) : Data.state => {
+let attack = ({mobs} as state: Data.state, mobLoc: Data.location, mob: Data.mob) : Data.state => {
   /* TODO: You get the mob via the state here so you don't really need to
   have `mob` as an argument... */
   let attackedMob = {
@@ -69,16 +75,8 @@ let attack = (state: Data.state, mobLoc: Data.location, mob: Data.mob) : Data.st
     health: mob.health - state.player.weapon.damage
   };
   {...state,
-    mobs:
-      /* Replace mob */
-      List.map(((l: Data.location, m: Data.mob)) => {
-        if (l == mobLoc) {
-          (l, attackedMob)
-        }
-        else {
-          (l, m)
-        }
-      }, state.mobs)
+    /* Replace mob */
+    mobs: Data.LocationMap.add(mobLoc, attackedMob, mobs)
   }
 };
 
@@ -120,22 +118,17 @@ let nextTurn = (action: Data.action, state: Data.state) : Data.state => {
 
 /* String representation of game room */
 let stateToRoom = ({size: (width, height)} as state: Data.state) : Data.room => {
+  /* TODO: Build up the array from state rather than checking for mobs for *every* coordinate */
   range(0, width) |> List.map((row) => {
     range(0, height) |> List.map((col) => {
       if ((row, col) == state.loc) {
         Data.Player
       }
       else {
-        /* TODO: state.mobs should be a map[location, mob] */
-        /* Replace this with just Mob(state.mobs[(row, col)]) or Data.Empty */
-        state.mobs |> List.fold_left((cur, (loc, mob)) => {
-          if (cur == Data.Empty && loc == (row, col)) {
-            Data.Mob(mob)
-          }
-          else {
-            cur
-          }
-        }, Data.Empty)
+        switch(Data.LocationMap.find((row, col), state.mobs)) {
+          | mob => Data.Mob(mob)
+          | exception Not_found => Data.Empty
+        }
       }
     })
   })
@@ -167,8 +160,8 @@ let squareToStr = (s: Data.square) : string => switch(s) {
 BUT, modify "view" to create a "room" based on a list of mobs and locations, for easier printing [X]
 2.75: Test moving player, monsters, attacking, defeating monsters [X]
 3. Hook up to React app with elements for board display (move all this code to react app!) [X]
-4. Allow player interaction by clicking highlighted tiles -> give callback function to Tile
-5. Prevent the player or mobs from moving off the screen
+~~4. Allow player interaction by clicking highlighted tiles -> give callback function to Tile
+5. Prevent the player or mobs from moving off the screen [X]
 6. Mob attacks
 7. Player death
 8. Mob movement AI (BFS!)
