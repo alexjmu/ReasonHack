@@ -34,10 +34,24 @@ let getMobAtLoc = (loc: Data.location, mobs: list((Data.location, Data.mob))) : 
   }
 };
 
+let isEmpty = (state: Data.state, (x, y) as loc: Data.location) : bool => {
+  /* No other mob */
+  getMobAtLoc(loc, state.mobs) == None
+  /* No player */
+  && state.loc != loc
+  /* Not off the board */
+  && 0 <= x && x <= fst(state.size)
+  && 0 <= y && y <= snd(state.size)
+};
+
+/* Move every mob one step. Do not move into non-empty squares */
 let moveMobs = ({mobs} as state: Data.state) : Data.state => {
   {...state,
     mobs: mobs |> List.map(
-      (((x, y): Data.location, mob)) => ((x + 1, y), mob))
+      (((x, y): Data.location, mob)) => {
+        let newLoc = (x + 1, y);
+        if (isEmpty(state, newLoc)) {(newLoc, mob)} else {((x, y), mob)}
+      })
   }
 };
 
@@ -72,12 +86,19 @@ let attack = (state: Data.state, mobLoc: Data.location, mob: Data.mob) : Data.st
 let playerTurn = (action: Data.action, state: Data.state) : Data.state => switch(action) {
   | Move(dir) => {
     let (x, y) = state.loc;
-    {...state, loc: switch(dir) {
+    let newLoc = switch(dir) {
       | Left => (x, y - 1)
       | Right => (x, y + 1)
       | Up => (x - 1, y)
       | Down => (x + 1, y)
-    }}
+    };
+    if (isEmpty(state, newLoc)) {
+      {...state, loc: newLoc}
+    }
+    else {
+      /* Can't move into a non-empty square */
+      state
+    }
   }
   | Attack => {
     let (x, y) = (0, 1); /* Square to right of player */
@@ -106,6 +127,7 @@ let stateToRoom = ({size: (width, height)} as state: Data.state) : Data.room => 
       }
       else {
         /* TODO: state.mobs should be a map[location, mob] */
+        /* Replace this with just Mob(state.mobs[(row, col)]) or Data.Empty */
         state.mobs |> List.fold_left((cur, (loc, mob)) => {
           if (cur == Data.Empty && loc == (row, col)) {
             Data.Mob(mob)
