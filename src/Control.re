@@ -17,25 +17,6 @@ let find_opt = (f: ('a => bool), ls: list('a)) : option('a) => {
   };
 };
 
-let initialState: Data.state = {
-  player: {
-    health: 10,
-    weapon: Data.sword
-  },
-  loc: (1, 1),
-  mobs: Data.LocationMap.(
-    empty
-    |> add((2, 3), Data.slime)
-    |> add((3, 3), Data.slime)
-  ),
-  stucks: Data.LocationMap.(
-    empty
-    |> add((5, 3), Data.rock)
-    |> add((6, 6), Data.rock)
-  ),
-  size: (10, 10)
-};
-
 let getMobAtLoc = (loc: Data.location, mobs: Data.mobStore) : option(Data.mob) => {
   switch(Data.LocationMap.find(loc, mobs)) {
     | mob => Some(mob)
@@ -64,6 +45,12 @@ let isEmpty = (state: Data.state, (x, y) as loc: Data.location) : bool => {
 
 let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state => {
   let newStucks = {
+    let addRock = (coord, rock, stucks) : Data.stuckStore => {
+        if (Js.Math.random() <= 0.25)
+          Data.LocationMap.add(coord, rock, stucks)
+        else
+          stucks
+    };
     let rock = Data.rock;
     let all_coords: list(Data.location) = {
       range(0, height) |> List.fold_left(
@@ -75,20 +62,20 @@ let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state 
     };
     List.fold_left((stucks, coord) => {
       if (isEmpty(state, coord)) {
-        Data.LocationMap.add(coord, rock, stucks)
+        addRock(coord, rock, stucks)
       }
       else {
         stucks
       }
     }, Data.LocationMap.empty, all_coords);
   };
-  let union = Data.LocationMap.merge(
-    (key: Data.location, stuck1: option(Data.stuck), stuck2: option(Data.stuck)) : option(Data.stuck) => {
+  let union : (Data.stuckStore => Data.stuckStore => Data.stuckStore) = Data.LocationMap.merge(
+    (_key: Data.location, stuck1: option(Data.stuck), stuck2: option(Data.stuck)) : option(Data.stuck) => {
       switch((stuck1, stuck2)) {
         | (None, None) => None
         | (Some(s), None) => Some(s)
         | (None, Some(s)) => Some(s)
-        | (Some(s1), Some(s2)) => Some(s2)
+        | (Some(_s1), Some(s2)) => Some(s2)
       }
     }
   );
@@ -97,9 +84,6 @@ let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state 
     stucks: union(state.stucks, newStucks)
   }
 };
-
-/* DEBUG */
-let initialState = initialState |> generateRocks;
 
 /* Move every mob one step. Do not move into non-empty squares */
 let moveMobs = ({mobs} as state: Data.state) : Data.state => {
@@ -212,7 +196,26 @@ let squareToStr = (s: Data.square) : string => switch(s) {
   | Player => {js|🤺|js}
   | Data.Mob({repr}) => repr
   | Data.Stuck({repr}) => repr
-}
+};
+
+let initialState: Data.state = ({
+  player: {
+    health: 10,
+    weapon: Data.sword
+  },
+  loc: (1, 1),
+  mobs: Data.LocationMap.(
+    empty
+    |> add((2, 3), Data.slime)
+    |> add((3, 3), Data.slime)
+  ),
+  stucks: Data.LocationMap.(
+    empty
+    |> add((5, 3), Data.rock)
+    |> add((6, 6), Data.rock)
+  ),
+  size: (10, 10)
+} : Data.state) |> generateRocks;
 
 /* TODO:
 
