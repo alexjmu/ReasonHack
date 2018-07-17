@@ -28,6 +28,11 @@ let initialState: Data.state = {
     |> add((2, 3), Data.slime)
     |> add((3, 3), Data.slime)
   ),
+  stucks: Data.LocationMap.(
+    empty
+    |> add((5, 3), Data.rock)
+    |> add((6, 6), Data.rock)
+  ),
   size: (10, 10)
 };
 
@@ -38,9 +43,18 @@ let getMobAtLoc = (loc: Data.location, mobs: Data.mobStore) : option(Data.mob) =
   }
 };
 
+let getStuckAtLoc = (loc: Data.location, stucks: Data.stuckStore) : option(Data.stuck) => {
+  switch(Data.LocationMap.find(loc, stucks)) {
+    | stuck => Some(stuck)
+    | exception Not_found => None
+  }
+};
+
 let isEmpty = (state: Data.state, (x, y) as loc: Data.location) : bool => {
   /* No other mob */
   getMobAtLoc(loc, state.mobs) == None
+  /* No stuck */
+  && getStuckAtLoc(loc, state.stucks) == None
   /* No player */
   && state.loc != loc
   /* Not off the board */
@@ -119,15 +133,22 @@ let nextTurn = (action: Data.action, state: Data.state) : Data.state => {
 /* String representation of game room */
 let stateToRoom = ({size: (width, height)} as state: Data.state) : Data.room => {
   /* TODO: Build up the array from state rather than checking for mobs for *every* coordinate */
+  /* TODO: Make the tiles/squares its own module with Data.Tile.t, Data.Tile.Mob, etc. */
   range(0, width) |> List.map((row) => {
     range(0, height) |> List.map((col) => {
+      /* Each square has either a player, a mob, a stuck, or it is empty */
       if ((row, col) == state.loc) {
         Data.Player
       }
       else {
         switch(Data.LocationMap.find((row, col), state.mobs)) {
           | mob => Data.Mob(mob)
-          | exception Not_found => Data.Empty
+          | exception Not_found => {
+            switch(Data.LocationMap.find((row, col), state.stucks)) {
+              | stuck => Data.Stuck(stuck)
+              | exception Not_found => Data.Empty
+            }
+          }
         }
       }
     })
@@ -139,6 +160,7 @@ let roomToStr = (r: Data.room) : string => {
     | Data.Empty => "."
     | Data.Player => "P"
     | Data.Mob({repr}) => repr
+    | Data.Stuck({repr}) => repr
   };
   r |> List.map((row) => {
     row |> List.map(tileToStr) |> String.concat("")
@@ -149,7 +171,8 @@ let roomToStr = (r: Data.room) : string => {
 let squareToStr = (s: Data.square) : string => switch(s) {
   | Empty => {js|⬛|js}
   | Player => {js|🤺|js}
-  | Mob(mob) => mob.repr
+  | Data.Mob({repr}) => repr
+  | Data.Stuck({repr}) => repr
 }
 
 /* TODO:

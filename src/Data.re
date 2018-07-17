@@ -24,6 +24,11 @@ type mob = {
   repr: string
 };
 
+type stuck = {
+  name: string,
+  repr: string
+};
+
 type location = (int, int);
 
 let sword: weapon = {
@@ -37,10 +42,16 @@ let slime: mob = {
   repr: {js|👾|js}
 };
 
+let rock: stuck = {
+  name: "rock",
+  repr: {js|🔳|js}
+};
+
 type square =
   | Empty
   | Player
-  | Mob(mob);
+  | Mob(mob)
+  | Stuck(stuck);
 
 type room = list(list(square));
 
@@ -51,9 +62,13 @@ let module LocationMap = Map.Make({
 
 type mobStore = LocationMap.t(mob);
 
+/* "stucks" = objects on map that don't move (suggested by Bronte) */
+type stuckStore = LocationMap.t(stuck);
+
 type state = {
   player: player,
   loc: location,
   mobs: mobStore,
+  stucks: stuckStore,
   size: (int, int)
 };
