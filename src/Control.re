@@ -62,6 +62,45 @@ let isEmpty = (state: Data.state, (x, y) as loc: Data.location) : bool => {
   && 0 <= y && y <= snd(state.size)
 };
 
+let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state => {
+  let newStucks = {
+    let rock = Data.rock;
+    let all_coords: list(Data.location) = {
+      range(0, height) |> List.fold_left(
+        (ls, row) => {
+          range(0, width) |> List.map((col) => (row, col)) |> List.append(ls)
+        },
+        []
+      )
+    };
+    List.fold_left((stucks, coord) => {
+      if (isEmpty(state, coord)) {
+        Data.LocationMap.add(coord, rock, stucks)
+      }
+      else {
+        stucks
+      }
+    }, Data.LocationMap.empty, all_coords);
+  };
+  let union = Data.LocationMap.merge(
+    (key: Data.location, stuck1: option(Data.stuck), stuck2: option(Data.stuck)) : option(Data.stuck) => {
+      switch((stuck1, stuck2)) {
+        | (None, None) => None
+        | (Some(s), None) => Some(s)
+        | (None, Some(s)) => Some(s)
+        | (Some(s1), Some(s2)) => Some(s2)
+      }
+    }
+  );
+  {
+    ...state,
+    stucks: union(state.stucks, newStucks)
+  }
+};
+
+/* DEBUG */
+let initialState = initialState |> generateRocks;
+
 /* Move every mob one step. Do not move into non-empty squares */
 let moveMobs = ({mobs} as state: Data.state) : Data.state => {
   {...state,
