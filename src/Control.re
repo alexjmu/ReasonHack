@@ -85,6 +85,58 @@ let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state 
   }
 };
 
+module LocationSet = Set.Make({
+  type t = Data.location;
+  let compare = compare
+});
+
+/* Find a path from one square to another, using only empty squares (not counting target square) */
+let findPath = (state: Data.state, startLoc: Data.location, endLoc: Data.location) : option(list(Data.location)) => {
+  /* TODO: Could be made faster by checking whether endLoc is accessible and returning
+  * None without a search in that case */
+  let getNeighbours = ((x, y): Data.location) : list(Data.location) => {
+    [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
+  };
+  let checkEmpty : (Data.location => bool) = isEmpty(state);
+
+  let unvisited : Queue.t(Data.location) = Queue.create();
+  let visited : ref(LocationSet.t) = ref(LocationSet.empty);
+  let history : ref(Data.LocationMap.t(Data.location)) = ref(Data.LocationMap.empty);
+  let isFound : ref(bool) = ref(false);
+  /* Initialise */
+  Queue.add(startLoc, unvisited);
+
+  while (!Queue.is_empty(unvisited) && !isFound^) {
+    let current : Data.location = Queue.pop(unvisited);
+    if (current == endLoc) {
+      isFound := true;
+    }
+    else {
+      getNeighbours(current)
+      |> List.filter((loc) => (checkEmpty(loc) || loc == endLoc) && !LocationSet.mem(loc, visited^))
+      |> List.iter((loc) => {
+        history := Data.LocationMap.add(loc, current, history^);
+        Queue.push(loc, unvisited)
+      });
+      visited := LocationSet.add(current, visited^);
+    }
+  };
+  if (isFound^) {
+    /* Get path from history, [endLoc, ..., startLoc] */
+    let rec mapToList = (loc: Data.location, aMap: Data.LocationMap.t(Data.location)) : list(Data.location) => {
+      [loc, ...{switch(Data.LocationMap.find(loc, aMap)) {
+          | parentLoc => mapToList(parentLoc, aMap)
+          | exception Not_found => []
+      }}]
+    };
+    Some(mapToList(endLoc, history^) |> List.rev)
+  }
+  else {
+    /* No path found */
+    None
+  }
+};
+
 /* Move every mob one step. Do not move into non-empty squares */
 let moveMobs = ({mobs} as state: Data.state) : Data.state => {
   {...state,
@@ -178,7 +230,7 @@ let stateToRoom = ({size: (width, height)} as state: Data.state) : Data.room => 
   })
 };
 
-let roomToStr = (r: Data.room) : string => {
+let roomToConsoleStr = (r: Data.room) : string => {
   let tileToStr = (t: Data.square) : string => switch(t) {
     | Data.Empty => "."
     | Data.Player => "P"
