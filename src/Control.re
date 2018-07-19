@@ -283,11 +283,13 @@ BUT, modify "view" to create a "room" based on a list of mobs and locations, for
 ~~4. Allow player interaction by clicking highlighted tiles -> give callback function to Tile
 5. Prevent the player or mobs from moving off the screen [X]
 6. Mob attacks
+6.5. Action log to display mob attacks, player health, etc. [ ]
+6.5.5. Fix glitch where mobs run into eachother and one disappears [ ]
 7. Player death
-8. Mob movement AI (BFS!)
-9. Randomly generated obstacles on the board
+8. Mob movement AI (BFS!) [X]
+9. Randomly generated obstacles on the board [X]
 
-0. Learn about functors/modules in OCaml create a Map[location -> mob] for the state :)
+0. Learn about functors/modules in OCaml create a Map[location -> mob] for the state :) [X]
 
 */
 
