@@ -91,6 +91,7 @@ module LocationSet = Set.Make({
 });
 
 /* Find a path from one square to another, using only empty squares (not counting target square) */
+/* Returns Some([startLoc, ..., endLoc]) or None */
 let findPath = (state: Data.state, startLoc: Data.location, endLoc: Data.location) : option(list(Data.location)) => {
   /* TODO: Could be made faster by checking whether endLoc is accessible and returning
   * None without a search in that case */
@@ -138,14 +139,16 @@ let findPath = (state: Data.state, startLoc: Data.location, endLoc: Data.locatio
 };
 
 /* Move every mob one step. Do not move into non-empty squares */
-let moveMobs = ({mobs} as state: Data.state) : Data.state => {
+let moveMobs = ({mobs, loc: playerLoc} as state: Data.state) : Data.state => {
   {...state,
     mobs: Data.LocationMap.fold(
-      ((x, y): Data.location, mob: Data.mob, newMobs: Data.mobStore) : Data.mobStore => {
-        let newLoc = (x + 1, y);
-        Data.LocationMap.add({
-          if (isEmpty(state, newLoc)) newLoc else (x, y)
-        }, mob, newMobs)
+      (curLoc: Data.location, mob: Data.mob, newMobs: Data.mobStore) : Data.mobStore => {
+        let newLoc = switch(findPath(state, curLoc, playerLoc)) {
+          | Some([_, nextLoc, ..._]) when isEmpty(state, nextLoc) => nextLoc
+          | Some(_) => curLoc /* Don't move if no empty path */
+          | None => curLoc
+        };
+        Data.LocationMap.add(newLoc, mob, newMobs)
       }, mobs, Data.LocationMap.empty)
   }
 };
