@@ -92,13 +92,12 @@ module LocationSet = Set.Make({
 
 /* Find a path from one square to another, using only empty squares (not counting target square) */
 /* Returns Some([startLoc, ..., endLoc]) or None */
-let findPath = (state: Data.state, startLoc: Data.location, endLoc: Data.location) : option(list(Data.location)) => {
+let findPath = (startLoc: Data.location, endLoc: Data.location, ~checkEmpty: (Data.location => bool)) : option(list(Data.location)) => {
   /* TODO: Could be made faster by checking whether endLoc is accessible and returning
   * None without a search in that case */
   let getNeighbours = ((x, y): Data.location) : list(Data.location) => {
     [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
   };
-  let checkEmpty : (Data.location => bool) = isEmpty(state);
 
   let unvisited : Queue.t(Data.location) = Queue.create();
   let visited : ref(LocationSet.t) = ref(LocationSet.empty);
@@ -143,8 +142,11 @@ let moveMobs = ({mobs, loc: playerLoc} as state: Data.state) : Data.state => {
   {...state,
     mobs: Data.LocationMap.fold(
       (curLoc: Data.location, mob: Data.mob, newMobs: Data.mobStore) : Data.mobStore => {
+        /* Use updated game board */
         let canMove : (Data.location => bool) = isEmpty({...state, mobs: newMobs});
-        let newLoc = switch(findPath(state, curLoc, playerLoc)) {
+        /* Monsters move closer to player even if portion of path passes over other mobs */
+        let pathCandidate : (Data.location => bool) = (loc) => (canMove(loc) || getMobAtLoc(loc, newMobs) != None);
+        let newLoc = switch(findPath(curLoc, playerLoc, ~checkEmpty=pathCandidate)) {
           | Some([_, nextLoc, ..._]) when canMove(nextLoc) => nextLoc
           | Some(_) => curLoc /* Don't move if no empty path */
           | None => curLoc
