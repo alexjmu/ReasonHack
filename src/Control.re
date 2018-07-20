@@ -143,13 +143,16 @@ let moveMobs = ({mobs, loc: playerLoc} as state: Data.state) : Data.state => {
   {...state,
     mobs: Data.LocationMap.fold(
       (curLoc: Data.location, mob: Data.mob, newMobs: Data.mobStore) : Data.mobStore => {
+        let canMove : (Data.location => bool) = isEmpty({...state, mobs: newMobs});
         let newLoc = switch(findPath(state, curLoc, playerLoc)) {
-          | Some([_, nextLoc, ..._]) when isEmpty(state, nextLoc) => nextLoc
+          | Some([_, nextLoc, ..._]) when canMove(nextLoc) => nextLoc
           | Some(_) => curLoc /* Don't move if no empty path */
           | None => curLoc
         };
-        Data.LocationMap.add(newLoc, mob, newMobs)
-      }, mobs, Data.LocationMap.empty)
+        newMobs
+          |> Data.LocationMap.remove(curLoc)
+          |> Data.LocationMap.add(newLoc, mob)
+      }, mobs, mobs)
   }
 };
 
