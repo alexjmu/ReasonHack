@@ -154,6 +154,7 @@ let findPath = (startLoc: Data.location, endLoc: Data.location, ~checkEmpty: (Da
 };
 
 /* Move every mob one step. Do not move into non-empty squares */
+/* N.B. mobs are moved one-by-one in turn order, not as a unit */
 let moveMobs = ({mobs, loc: playerLoc} as state: Data.state) : Data.state => {
   {...state,
     mobs: Data.LocationMap.fold(
