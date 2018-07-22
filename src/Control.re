@@ -1,6 +1,7 @@
 /* utilities */
 
 let rec range = (a: int, b: int) : list(int) => {
+  assert (a <= b);
   if (a >= b) {
     []
   }
@@ -15,6 +16,15 @@ let find_opt = (f: ('a => bool), ls: list('a)) : option('a) => {
     | x => Some(x)
     | exception Not_found => None
   };
+};
+
+let getAllCoords = ({size: (height, width)}: Data.state) : list(Data.location) => {
+  range(0, height) |> List.fold_left(
+    (ls, row) => {
+      range(0, width) |> List.map((col) => (row, col)) |> List.append(ls)
+    },
+    []
+  )
 };
 
 let getMobAtLoc = (loc: Data.location, mobs: Data.mobStore) : option(Data.mob) => {
@@ -43,7 +53,7 @@ let isEmpty = ({size: (height, width)} as state: Data.state, (x, y) as loc: Data
   && 0 <= y && y < width
 };
 
-let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state => {
+let generateRocks = (state: Data.state) : Data.state => {
   let newStucks = {
     let addRock = (coord, rock, stucks) : Data.stuckStore => {
         if (Js.Math.random() <= 0.25)
@@ -52,14 +62,7 @@ let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state 
           stucks
     };
     let rock = Data.rock;
-    let all_coords: list(Data.location) = {
-      range(0, height) |> List.fold_left(
-        (ls, row) => {
-          range(0, width) |> List.map((col) => (row, col)) |> List.append(ls)
-        },
-        []
-      )
-    };
+    let all_coords = getAllCoords(state);
     List.fold_left((stucks, coord) => {
       if (isEmpty(state, coord)) {
         addRock(coord, rock, stucks)
@@ -82,6 +85,19 @@ let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state 
   {
     ...state,
     stucks: union(state.stucks, newStucks)
+  }
+};
+
+let generateMobs = (numMobs: int, state: Data.state) : Data.state => {
+  let mob = Data.slime;
+  let addRandomMob = (mobs: Data.mobStore) : Data.mobStore => {
+    let potentialCoords = getAllCoords(state) |> List.filter(isEmpty({...state, mobs}));
+    let randomCoord = List.length(potentialCoords) |> Random.int |> List.nth(potentialCoords);
+    Data.LocationMap.add(randomCoord, mob, mobs);
+  };
+  {...state,
+    mobs: List.fold_left((newMobs, _) => addRandomMob(newMobs),
+      state.mobs, range(0, numMobs))
   }
 };
 
@@ -264,18 +280,14 @@ let initialState: Data.state = ({
     weapon: Data.sword
   },
   loc: (1, 1),
-  mobs: Data.LocationMap.(
-    empty
-    |> add((2, 3), Data.slime)
-    |> add((3, 3), Data.slime)
-  ),
+  mobs: Data.LocationMap.empty,
   stucks: Data.LocationMap.(
     empty
     |> add((5, 3), Data.rock)
     |> add((6, 6), Data.rock)
   ),
   size: (10, 10)
-} : Data.state) |> generateRocks;
+} : Data.state) |> generateRocks |> generateMobs(3);
 
 /* TODO:
 
