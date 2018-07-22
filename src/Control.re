@@ -1,7 +1,7 @@
 /* utilities */
 
 let rec range = (a: int, b: int) : list(int) => {
-  if (a > b) {
+  if (a >= b) {
     []
   }
   else {
@@ -31,7 +31,7 @@ let getStuckAtLoc = (loc: Data.location, stucks: Data.stuckStore) : option(Data.
   }
 };
 
-let isEmpty = (state: Data.state, (x, y) as loc: Data.location) : bool => {
+let isEmpty = ({size: (height, width)} as state: Data.state, (x, y) as loc: Data.location) : bool => {
   /* No other mob */
   getMobAtLoc(loc, state.mobs) == None
   /* No stuck */
@@ -39,8 +39,8 @@ let isEmpty = (state: Data.state, (x, y) as loc: Data.location) : bool => {
   /* No player */
   && state.loc != loc
   /* Not off the board */
-  && 0 <= x && x <= fst(state.size)
-  && 0 <= y && y <= snd(state.size)
+  && 0 <= x && x < height
+  && 0 <= y && y < width
 };
 
 let generateRocks = ({size: (height, width)} as state: Data.state) : Data.state => {
