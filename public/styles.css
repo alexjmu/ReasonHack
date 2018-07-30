@@ -23,9 +23,6 @@ body {
   right: 0;
 }
 
-/* TODO: Styling */
-
 table.room {
-  /* TODO: Remove outline, make big and centred */
   font-size: 40px;
 }

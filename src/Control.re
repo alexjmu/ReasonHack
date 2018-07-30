@@ -290,30 +290,7 @@ let initialState: Data.state = ({
   size: (10, 10)
 } : Data.state) |> generateRocks |> generateMobs(3);
 
-/* TODO:
-
-1. (Fix and) compile what we have so far [X]
-2. View function [X]
-2.5: Easiest way to move mobs is to have a list of mobs and their locations as first thought.
-BUT, modify "view" to create a "room" based on a list of mobs and locations, for easier printing [X]
-2.75: Test moving player, monsters, attacking, defeating monsters [X]
-3. Hook up to React app with elements for board display (move all this code to react app!) [X]
-~~4. Allow player interaction by clicking highlighted tiles -> give callback function to Tile
-5. Prevent the player or mobs from moving off the screen [X]
-6. Mob attacks
-6.5. Action log to display mob attacks, player health, etc. [ ]
-6.5.5. Fix glitch where mobs run into eachother and one disappears [ ]
-7. Player death
-8. Mob movement AI (BFS!) [X]
-9. Randomly generated obstacles on the board [X]
-
-0. Learn about functors/modules in OCaml create a Map[location -> mob] for the state :) [X]
-
-*/
-
 /* README
-
-So, Alex, in case you don't look at this again for quite a while:
 
 The game is represented by a `state` record type, which stores the room dimensions,
 the player, the player's location, and a list of (location, mob) pairs.
