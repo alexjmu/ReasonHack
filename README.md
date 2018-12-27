@@ -1,6 +1,6 @@
-# AltHack
+# ReasonHack
 
-AltHack is a proof-of-concept minigame written in ReasonML and using
+ReasonHack is a proof-of-concept minigame written in ReasonML and using
 ReasonReact.
 
 Go to `public/index.html` in your browser to start. Move around with the arrow
