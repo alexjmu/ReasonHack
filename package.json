@@ -3,7 +3,8 @@
   "scripts": {
     "start": "bsb -make-world -w",
     "js": "bsb -make-world",
-    "build": "webpack -w",
+    "build": "webpack",
+    "build-watch": "webpack -w",
     "clean": "bsb -clean-world"
   },
   "dependencies": {
