@@ -81,7 +81,7 @@ let make = (_children) => {
     reducer: (action, state) => ReasonReact.Update(Control.nextTurn(action, state)),
     render: ({state}) =>
       <div className={"game"}>
-        <h1>(str("ReasonHack"))</h1>
+        <h1>(str("AltHack"))</h1>
         <Room room={state |> Control.stateToRoom} />
         <p>(str("Use the arrow keys to move. Press 'a' to attack the adjacent square to the right. Refresh for a new game."))</p>
       </div>
