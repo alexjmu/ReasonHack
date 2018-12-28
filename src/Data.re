@@ -1,11 +1,13 @@
+type location = (int, int);
+
 type weapon = {
   name: string,
-  damage: int
+  damage: int,
 };
 
 type player = {
   health: int,
-  weapon: weapon,
+  weapon,
 };
 
 type direction =
@@ -16,36 +18,24 @@ type direction =
 
 type action =
   | Move(direction)
-  | Attack;
+  | Attack(location);
 
 type mob = {
   name: string,
   health: int,
-  repr: string
+  repr: string,
 };
 
 type stuck = {
   name: string,
-  repr: string
+  repr: string,
 };
 
-type location = (int, int);
+let sword: weapon = {name: "wood sword", damage: 1};
 
-let sword: weapon = {
-  name: "wood sword",
-  damage: 1
-};
+let slime: mob = {name: "green slime", health: 1, repr: {js|👾|js}};
 
-let slime: mob = {
-  name: "green slime",
-  health: 2,
-  repr: {js|👾|js}
-};
-
-let rock: stuck = {
-  name: "rock",
-  repr: {js|🔳|js}
-};
+let rock: stuck = {name: "rock", repr: {js|🔳|js}};
 
 type square =
   | Empty
@@ -55,10 +45,11 @@ type square =
 
 type room = list(list(square));
 
-let module LocationMap = Map.Make({
-  type t = location;
-  let compare = compare
-});
+module LocationMap =
+  Map.Make({
+    type t = location;
+    let compare = compare;
+  });
 
 type mobStore = LocationMap.t(mob);
 
@@ -66,9 +57,9 @@ type mobStore = LocationMap.t(mob);
 type stuckStore = LocationMap.t(stuck);
 
 type state = {
-  player: player,
+  player,
   loc: location,
   mobs: mobStore,
   stucks: stuckStore,
-  size: (int, int)
+  size: (int, int),
 };
