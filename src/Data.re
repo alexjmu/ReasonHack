@@ -33,7 +33,7 @@ type stuck = {
 
 let sword: weapon = {name: "wood sword", damage: 1};
 
-let slime: mob = {name: "green slime", health: 2, repr: {js|👾|js}};
+let slime: mob = {name: "green slime", health: 1, repr: {js|👾|js}};
 
 let rock: stuck = {name: "rock", repr: {js|🔳|js}};
 
