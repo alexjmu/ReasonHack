@@ -51,7 +51,8 @@ module Room = {
 
 [@bs.val] external window : Dom.window = "";
 [@bs.send]
-external addEventListener : (Dom.window, string, 'a => unit) => unit = "";
+external addEventListener : (Dom.window, string, 'a => unit, bool) => unit =
+  "";
 
 type state = Data.state;
 let component = ReasonReact.reducerComponent("App");
@@ -59,10 +60,10 @@ let component = ReasonReact.reducerComponent("App");
 let make = _children => {
   let keyToAction = (key: string) : option(Data.action) =>
     switch (key) {
-    | "ArrowUp" => Some(Data.Move(Data.Up))
-    | "ArrowRight" => Some(Data.Move(Data.Right))
-    | "ArrowDown" => Some(Data.Move(Data.Down))
-    | "ArrowLeft" => Some(Data.Move(Data.Left))
+    | "w" => Some(Data.Move(Data.Up))
+    | "d" => Some(Data.Move(Data.Right))
+    | "s" => Some(Data.Move(Data.Down))
+    | "a" => Some(Data.Move(Data.Left))
     | _ => None
     };
   {
@@ -77,7 +78,7 @@ let make = _children => {
         };
       };
       /* Call reducer with action defined by keypress */
-      addEventListener(window, "keypress", keyPressHandler);
+      addEventListener(window, "keypress", keyPressHandler, false);
       ReasonReact.NoUpdate;
     },
     reducer: (action, state) =>
