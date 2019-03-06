@@ -94,6 +94,13 @@ let make = _children => {
             )
           )
         </p>
+        <p>
+          (str("Created by Alex Mueller. Check it out on "))
+          <a href="https://github.com/lemonpkt/ReasonHack">
+            (str("GitHub"))
+          </a>
+          (str("."))
+        </p>
       </div>,
   };
 };
