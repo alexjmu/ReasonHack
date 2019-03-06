@@ -90,7 +90,7 @@ let make = _children => {
         <p>
           (
             str(
-              "Use the arrow keys to move. Move into a monster to attack. Refresh for a new game.",
+              "Use the WASD keys to move. Move into a monster to attack. Refresh for a new game.",
             )
           )
         </p>
