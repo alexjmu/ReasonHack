@@ -1,9 +1,9 @@
 # ReasonHack
 
 ReasonHack is a proof-of-concept minigame written in ReasonML and using
-ReasonReact.
+ReasonReact. Hosted at (https://reasonhack.netlify.app)[https://reasonhack.netlify.app]
 
-![Screenshot](images/screenshot.png)
+![Screenshot](./screenshot.png)
 
 Built from Jared Forsyth's app template for his reason react tutorial:
 https://github.com/jaredly/a-reason-react-tutorial
