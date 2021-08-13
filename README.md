@@ -13,4 +13,5 @@ https://github.com/jaredly/a-reason-react-tutorial
 We go from ReasonML source to JS, and then bundle with webpack:
 
 `npm start` - Run bucklescript watcher -> From `/src/*.re` put js in /lib
+
 `npm run build` - Run webpack -> Bundle /lib into public/bundle.js
