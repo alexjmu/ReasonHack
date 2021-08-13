@@ -1,7 +1,7 @@
 # ReasonHack
 
 ReasonHack is a proof-of-concept minigame written in ReasonML and using
-ReasonReact. Hosted at (https://reasonhack.netlify.app)[https://reasonhack.netlify.app]
+ReasonReact. Hosted at https://reasonhack.netlify.app
 
 ![Screenshot](./screenshot.png)
 
